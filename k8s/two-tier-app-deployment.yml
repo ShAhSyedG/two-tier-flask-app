@@ -15,11 +15,11 @@ spec:
         app: two-tier-app
     spec:
       containers:
-        - name: two-tier-app
-          image: trainwithshubham/flaskapp:latest
+        - name: flask-app-ctr
+          image: syedshah642/app-flask:latest
           env:
             - name: MYSQL_HOST
-              value: "10.98.19.211"          # this is your mysql's service clusture IP, Make sure to change it with yours
+              value: "10.1.254.115" # mysql cluster IP
             - name: MYSQL_PASSWORD
               value: "admin"
             - name: MYSQL_USER
@@ -29,3 +29,35 @@ spec:
           ports:
             - containerPort: 5000
           imagePullPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: two-tier-app-service
+spec:
+  selector:
+    app: two-tier-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30004
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-app-ingress
+spec:
+  rules:
+    - host: flaskapp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: two-tier-app-service
+                port:
+                  number: 30004
