@@ -82,3 +82,22 @@ spec:
     - hosts:
         - your-domain.com
       secretName: your-tls-secret
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-app-ingress
+  namespace: default
+spec:
+  rules:
+      - http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: two-tier-app-service
+                port:
+                  number: 30004
