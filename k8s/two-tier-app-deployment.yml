@@ -20,7 +20,7 @@ spec:
           image: syedshah642/app-flask:latest
           env:
             - name: MYSQL_HOST
-              value: "10.1.254.115" # mysql cluster IP
+              value: "10.152.183.161" # mysql cluster IP
             - name: MYSQL_PASSWORD
               value: "admin"
             - name: MYSQL_USER
@@ -46,20 +46,4 @@ spec:
       targetPort: 5000
       nodePort: 30004
   type: LoadBalancer
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: node-app-ingress
-  namespace: default
-spec:
-  rules:
-      - http:
-          paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: two-tier-app-service
-                port:
-                  number: 30004
+
