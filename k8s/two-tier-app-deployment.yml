@@ -19,7 +19,7 @@ spec:
           image: syedshah642/app-flask:latest
           env:
             - name: MYSQL_HOST
-              value: "10.152.183.74" # mysql cluster IP
+              value: "10.152.183.111" # mysql cluster IP
             - name: MYSQL_PASSWORD
               value: "admin"
             - name: MYSQL_USER
@@ -29,6 +29,11 @@ spec:
           ports:
             - containerPort: 5000
           imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "3m"
+              memory: "1Gi"
+  
 
 ---
 apiVersion: v1
@@ -51,14 +56,14 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: flask-app-ingress
-  namespace: ingress
+  namespace: ingress-nginx
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     kubernetes.io/ingress.class: nginx
 spec:
   ingressClassName: nginx
-  rules:  
-      - host: appflask.com
+  rules: 
+      - host: dockkengineers.com
         http:
           paths:
           - path: /
@@ -68,4 +73,32 @@ spec:
                 name: two-tier-app-service
                 port:
                   number: 30004
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: two-tier-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: two-tier-app
+  minReplicas: 1 # Adjust as needed
+  maxReplicas: 3 # Adjust as needed
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:    
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+
 
