@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: two-tier-app
-  namespace: two-tier
   labels:
     app: two-tier-app
 spec:
@@ -12,45 +11,24 @@ spec:
       app: two-tier-app
   template:
     metadata:
-      annotations:
-        vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/tls-skip-verify: "true"
-        vault.hashicorp.com/agent-inject-secret-helloworld: "secret/basic-secret/db-credentials"
-        vault.hashicorp.com/agent-inject-template-db-credentials: |
-          {{- with secret "secret/basic-secret/db-credentials" -}}
-          {
-            "username" :  "{{ .Data.MYSQL_USER }}",
-            "password" :  "{{ .Data.MYSQL_PASSWORD }}",
-            "host"  : "{{ .Data.MYSQL_HOST}}"
-          }
-          {{- end }}
-        vault.hashicorp.com/role: "basic-secret-role"
-      labels:
-        app: basic-secret
-    spec:
-      serviceAccountName: basic-secret
       labels:
         app: two-tier-app
-    #spec:
+    spec:
       containers:
-        - name: flask-app-ctr
-          image: syedshah642/two-tier-app:latest
+        - name: two-tier-app
+          image: trainwithshubham/flaskapp:latest
           env:
-          #  - name: MYSQL_HOST
-          #    value: "10.152.183.111" # mysql cluster IP
-          #  - name: MYSQL_PASSWORD
-          #    value: "admin"
-          #  - name: MYSQL_USER
-          #    value: "admin"
+            - name: MYSQL_HOST
+              value: mysql          # this is your mysql's service clusture IP, Make sure to change it with yours
+            - name: MYSQL_PASSWORD
+              value: "admin"
+            - name: MYSQL_USER
+              value: "root"
             - name: MYSQL_DB
               value: "mydb"
           ports:
             - containerPort: 5000
           imagePullPolicy: Always
-          resources:
-            limits:
-              cpu: "3m"
-              memory: "1Gi"
   
 
 ---
